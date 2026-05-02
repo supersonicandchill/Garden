@@ -1,417 +1,1725 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-<title>Away Game — Christian Parent’s Playbook</title>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Backyard Garden Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #f8f9fa; font-family: 'DM Sans', system-ui, sans-serif; color: #1a1a1a; line-height: 1.6; }
-button { cursor: pointer; }
-.progress-bar { height: 10px; background: #e9ecef; border-radius: 9999px; overflow: hidden; }
-.progress-fill { height: 100%; transition: width 0.5s ease; }
-.team-card { background: #fff; border: 1px solid #dee2e6; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
-.delete-btn { background: #fee2e2; color: #ef4444; border: none; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; }
+/* ═══════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════ */
+:root {
+  --cream:        #F5F0E8;
+  --cream-dark:   #EAE3D3;
+  --cream-mid:    #F0EAD8;
+  --soil:         #3A2616;
+  --soil-light:   #6B4C35;
+  --terracotta:   #C0703C;
+  --terra-light:  #EACDB5;
+  --sage:         #6A9467;
+  --sage-light:   #B3CDB1;
+  --sage-dark:    #4B7248;
+  --moss:         #3D6439;
+  --gold:         #C4903A;
+  --gold-light:   #F0D99A;
+  --red:          #B54040;
+  --red-light:    #F8EDED;
+  --border:       rgba(58,38,22,0.12);
+  --border-strong:rgba(58,38,22,0.22);
+  --shadow-sm:    0 2px 8px rgba(58,38,22,0.08);
+  --shadow-md:    0 4px 20px rgba(58,38,22,0.12);
+  --shadow-lg:    0 8px 36px rgba(58,38,22,0.18);
+  --radius:       18px;
+  --radius-sm:    11px;
+  --radius-xs:    7px;
+  --nav-h:        72px;
+  --header-h:     68px;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', -apple-system, sans-serif;
+}
+
+/* ═══════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--soil);
+  min-height: 100%;
+  padding-bottom: var(--nav-h);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ═══════════════════════════════════
+   APP HEADER
+═══════════════════════════════════ */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--header-h);
+  background: rgba(245,240,232,0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.header-leaf { font-size: 26px; }
+.header-text { }
+.header-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--soil);
+  line-height: 1;
+}
+.header-sub {
+  font-size: 11px;
+  color: var(--soil-light);
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+.header-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sage-dark);
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: #fff;
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 200;
+  box-shadow: 0 -2px 20px rgba(58,38,22,0.1);
+}
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--soil-light);
+  opacity: 0.5;
+  font-family: var(--font-body);
+  transition: opacity 0.2s, color 0.2s;
+  padding: 8px;
+}
+.nav-tab.active { color: var(--sage-dark); opacity: 1; }
+.nav-tab-icon { font-size: 22px; line-height: 1; }
+.nav-tab-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+
+/* ═══════════════════════════════════
+   VIEWS
+═══════════════════════════════════ */
+.view { display: none; }
+.view.active { display: block; animation: fadeSlideIn 0.22s ease; }
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════
+   TODAY VIEW
+═══════════════════════════════════ */
+.view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 20px 8px;
+}
+.view-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--terracotta);
+  color: #fff;
+}
+.badge.good { background: var(--sage); }
+
+.section-label {
+  padding: 10px 20px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--soil-light);
+}
+.task-list { padding: 0 16px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+
+/* Task Card */
+.task-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 14px 14px 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  box-shadow: var(--shadow-sm);
+  border: 1.5px solid var(--border);
+  animation: cardIn 0.25s ease backwards;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.task-card.overdue {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.task-card-icon {
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  background: var(--cream-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 23px;
+  flex-shrink: 0;
+}
+.task-card.overdue .task-card-icon { background: #f8dede; }
+.task-card-body { flex: 1; min-width: 0; }
+.task-card-name { font-size: 15px; font-weight: 600; color: var(--soil); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.task-card-plant { font-size: 12.5px; color: var(--soil-light); margin-top: 2px; }
+.task-card-meta { font-size: 11.5px; font-weight: 700; margin-top: 3px; color: var(--red); }
+.task-card-meta.today-meta { color: var(--sage-dark); }
+.btn-done {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  background: var(--sage);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.btn-done:active { background: var(--sage-dark); transform: scale(0.95); }
+
+/* ═══════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 52px 28px;
+}
+.empty-icon { font-size: 58px; margin-bottom: 16px; }
+.empty-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.empty-body { font-size: 14px; color: var(--soil-light); line-height: 1.65; max-width: 260px; margin-bottom: 24px; }
+
+/* ═══════════════════════════════════
+   GARDEN VIEW
+═══════════════════════════════════ */
+.garden-actions { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px 10px; }
+.plant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 14px;
+  padding: 0 16px 24px;
+}
+@media (max-width: 360px) { .plant-grid { grid-template-columns: 1fr 1fr; gap: 10px; } }
+
+.plant-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 18px 14px 14px;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: cardIn 0.25s ease backwards;
+  position: relative;
+  overflow: hidden;
+}
+.plant-card:active { transform: scale(0.97); box-shadow: var(--shadow-sm); }
+.plant-card-stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--sage) 0%, var(--gold) 100%);
+}
+.plant-card.has-overdue .plant-card-stripe {
+  background: linear-gradient(90deg, var(--red) 0%, var(--terracotta) 100%);
+}
+.plant-card-emoji { font-size: 34px; display: block; margin-bottom: 10px; }
+.plant-card-name { font-weight: 700; font-size: 14.5px; color: var(--soil); line-height: 1.25; margin-bottom: 5px; }
+.plant-card-next { font-size: 11.5px; color: var(--soil-light); line-height: 1.4; min-height: 18px; }
+.plant-pill {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.pill-overdue { background: var(--red-light); color: var(--red); }
+.pill-due     { background: var(--terra-light); color: var(--terracotta); }
+.pill-good    { background: #DDF0DA; color: var(--moss); }
+.pill-none    { background: var(--cream-dark); color: var(--soil-light); }
+
+/* ═══════════════════════════════════
+   PLANT DETAIL OVERLAY
+═══════════════════════════════════ */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--cream);
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  animation: slideUpView 0.25s ease;
+  overflow: hidden;
+}
+.detail-overlay.active { display: flex; }
+@keyframes slideUpView {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.detail-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.btn-back {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--cream-dark);
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-back:active { background: var(--border); }
+.detail-emoji { font-size: 30px; }
+.detail-header-info { flex: 1; min-width: 0; }
+.detail-plant-name { font-family: var(--font-display); font-size: 20px; font-weight: 700; line-height: 1.1; }
+.detail-plant-type { font-size: 12px; color: var(--soil-light); margin-top: 2px; }
+.icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  border: none;
+  background: var(--cream-dark);
+  cursor: pointer;
+  font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.icon-btn:active { background: var(--border); }
+
+.detail-body { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+
+.detail-section { padding: 18px 18px 0; }
+.detail-section + .detail-section { margin-top: 4px; }
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--soil-light);
+  margin-bottom: 10px;
+}
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.notes-area {
+  width: 100%;
+  min-height: 76px;
+  padding: 12px 13px;
+  background: var(--cream-mid);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--soil);
+  resize: vertical;
+  line-height: 1.55;
+  transition: border-color 0.15s;
+}
+.notes-area:focus { outline: none; border-color: var(--sage); }
+
+/* Task detail cards */
+.task-det-card {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1.5px solid var(--border);
+  margin-bottom: 9px;
+}
+.task-det-icon { font-size: 22px; flex-shrink: 0; }
+.task-det-info { flex: 1; min-width: 0; }
+.task-det-name { font-size: 14px; font-weight: 600; }
+.task-det-freq { font-size: 12px; color: var(--soil-light); margin-top: 1px; }
+.task-det-next { font-size: 12px; color: var(--sage-dark); margin-top: 2px; }
+.task-det-next.overdue { color: var(--red); font-weight: 700; }
+.task-det-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════
+   SETTINGS VIEW
+═══════════════════════════════════ */
+.settings-block { padding: 20px 20px 0; }
+.settings-card {
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.settings-card-title { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin-bottom: 5px; }
+.settings-card-desc { font-size: 13px; color: var(--soil-light); line-height: 1.6; margin-bottom: 14px; }
+
+.disclaimer-card {
+  margin: 0 16px 30px;
+  border-radius: var(--radius-sm);
+  background: var(--terra-light);
+  border-left: 4px solid var(--terracotta);
+  padding: 14px;
+}
+.disclaimer-icon { font-size: 18px; margin-bottom: 5px; }
+.disclaimer-text { font-size: 12.5px; color: var(--soil); line-height: 1.6; }
+.disclaimer-text strong { color: var(--terracotta); }
+
+/* ═══════════════════════════════════
+   MODALS
+═══════════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,18,8,0.48);
+  z-index: 500;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0;
+  animation: overlayIn 0.2s ease;
+}
+.modal-overlay.active { display: flex; }
+@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-sheet {
+  background: var(--cream);
+  border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 0 0 40px;
+  animation: sheetUp 0.25s cubic-bezier(.22,.78,.35,1);
+}
+@keyframes sheetUp {
+  from { transform: translateY(40px); opacity: 0.6; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.modal-drag {
+  width: 44px; height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  margin: 14px auto 0;
+}
+.modal-inner { padding: 20px 20px 0; }
+.modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+
+/* ═══════════════════════════════════
+   FORMS
+═══════════════════════════════════ */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--soil-light);
+  margin-bottom: 7px;
+}
+.form-input, .form-select {
+  width: 100%;
+  padding: 13px 14px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--soil);
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.form-input:focus, .form-select:focus { outline: none; border-color: var(--sage); }
+
+.emoji-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.emoji-opt {
+  width: 46px; height: 46px;
+  border-radius: 11px;
+  border: 2px solid transparent;
+  background: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.emoji-opt.sel { border-color: var(--sage); background: var(--cream-dark); }
+
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.preset-row.sel { border-color: var(--sage); background: #E8F4E7; }
+.preset-check {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.preset-row.sel .preset-check { background: var(--sage); border-color: var(--sage); color: #fff; }
+.preset-label { font-size: 14px; font-weight: 500; }
+.preset-freq { font-size: 12px; color: var(--soil-light); margin-left: auto; }
+
+.freq-wrap { display: flex; gap: 8px; align-items: flex-end; }
+.freq-wrap .form-select { flex: 1; }
+.freq-days-input { width: 70px; text-align: center; flex-shrink: 0; }
+
+/* ═══════════════════════════════════
+   BUTTONS
+═══════════════════════════════════ */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--sage); color: #fff; }
+.btn-primary:active { background: var(--sage-dark); }
+.btn-ghost { background: var(--cream-dark); color: var(--soil); margin-top: 10px; }
+.btn-danger-soft { background: var(--red-light); color: var(--red); }
+.btn-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-sm:active { transform: scale(0.96); }
+.btn-sm-sage { background: var(--sage); color: #fff; }
+.btn-sm-sage:active { background: var(--sage-dark); }
+.btn-sm-ghost { background: var(--cream-dark); color: var(--soil); }
+.btn-add-task {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 13px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--soil-light);
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.15s;
+}
+.btn-add-task:active { background: var(--cream-dark); }
+
+/* ═══════════════════════════════════
+   CONFIRM DIALOG
+═══════════════════════════════════ */
+.confirm-body {
+  padding: 24px 20px 40px;
+  text-align: center;
+}
+.confirm-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.confirm-text { font-size: 14px; color: var(--soil-light); line-height: 1.55; margin-bottom: 22px; }
+
+/* ═══════════════════════════════════
+   TOAST
+═══════════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(14px);
+  background: var(--soil);
+  color: #fff;
+  padding: 11px 22px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════
+   UTILITIES
+═══════════════════════════════════ */
+.hidden { display: none !important; }
+.mt-10 { margin-top: 10px; }
+.small-text { font-size: 11.5px; color: var(--soil-light); margin-top: 4px; line-height: 1.4; }
+
+@media (min-width: 600px) {
+  .modal-sheet { border-radius: var(--radius); margin: 40px 20px; }
+  .modal-overlay { align-items: center; }
+}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel" data-presets="react">
-const { useState } = React;
 
-// ─── STORAGE ──────────────────────────────────────────────────────────────────
-function load(key, fb) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fb; } catch { return fb; } }
-function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} }
-let _c = Date.now();
-function uid() { return "x" + (++_c).toString(36); }
+<!-- ═══════════════ APP HEADER ═══════════════ -->
+<header class="app-header">
+  <div class="header-brand">
+    <span class="header-leaf">🌿</span>
+    <div class="header-text">
+      <div class="header-title">Garden Tracker</div>
+      <div class="header-sub">Backyard food garden</div>
+    </div>
+  </div>
+  <div id="headerDate" class="header-date"></div>
+</header>
 
-// ─── COLORS ───────────────────────────────────────────────────────────────────
-const C = {
-  bg0: "#f8f9fa", bg1: "#ffffff", bg2: "#f1f3f5", bg3: "#e9ecef",
-  border: "#dee2e6", borderHi: "#ff8c00",
-  text: "#1a1a1a", textSub: "#495057", textMuted: "#6c757d",
-  orange: "#ff8c00", green: "#00b36b"
+<!-- ═══════════════ TODAY VIEW ═══════════════ -->
+<section id="viewToday" class="view active">
+  <div class="view-header">
+    <div class="view-title">Today</div>
+    <span id="todayBadge" class="badge"></span>
+  </div>
+  <div id="todayContent"></div>
+</section>
+
+<!-- ═══════════════ GARDEN VIEW ═══════════════ -->
+<section id="viewGarden" class="view">
+  <div class="garden-actions">
+    <div class="view-title">My Garden</div>
+    <button class="btn-sm btn-sm-sage" id="addPlantBtn">＋ Add Plant</button>
+  </div>
+  <div id="gardenContent"></div>
+</section>
+
+<!-- ═══════════════ SETTINGS VIEW ═══════════════ -->
+<section id="viewSettings" class="view">
+  <div class="view-header" style="padding-bottom:4px;">
+    <div class="view-title">Settings</div>
+  </div>
+  <div class="settings-block">
+    <div class="settings-card">
+      <div class="settings-card-title">📥 Export Garden</div>
+      <div class="settings-card-desc">Download a complete backup of all your plants, tasks, and notes as a JSON file. Keep it safe!</div>
+      <button class="btn btn-primary" id="exportBtn">Download Backup</button>
+    </div>
+    <div class="settings-card">
+      <div class="settings-card-title">📤 Import Data</div>
+      <div class="settings-card-desc">Restore from a previous backup file. <strong>This replaces all current data.</strong></div>
+      <button class="btn btn-ghost" id="importBtn">Choose Backup File</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+    <div class="settings-card" style="margin-bottom:18px;">
+      <div class="settings-card-title">🌱 About</div>
+      <div class="settings-card-desc" style="margin-bottom:0;">Backyard Garden Tracker v1.0 — a smart, minimalist assistant for hobby food gardeners. Built for daily use, optimized for mobile.</div>
+    </div>
+  </div>
+  <div class="disclaimer-card">
+    <div class="disclaimer-icon">⚠️</div>
+    <div class="disclaimer-text">
+      <strong>Data Safety Notice:</strong> All data is stored locally in your browser. Clearing your browser data will permanently erase your garden records. Export your data regularly to avoid loss.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PLANT DETAIL OVERLAY ═══════════════ -->
+<div id="detailOverlay" class="detail-overlay">
+  <div class="detail-header">
+    <button class="btn-back" id="backBtn">←</button>
+    <span id="detailEmoji" class="detail-emoji"></span>
+    <div class="detail-header-info">
+      <div id="detailName" class="detail-plant-name"></div>
+      <div id="detailType" class="detail-plant-type"></div>
+    </div>
+    <button class="icon-btn" id="editPlantBtn" title="Edit plant">✏️</button>
+    <button class="icon-btn" id="deletePlantBtn" title="Delete plant">🗑️</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-section">
+      <div class="section-title">Notes</div>
+      <textarea id="detailNotes" class="notes-area" placeholder="Add notes about this plant…"></textarea>
+    </div>
+    <div class="detail-section" style="padding-bottom:20px;">
+      <div class="section-title-row">
+        <div class="section-title" style="margin-bottom:0;">Tasks</div>
+        <button class="btn-sm btn-sm-ghost" id="addTaskBtn">＋ Add Task</button>
+      </div>
+      <div id="detailTasksList"></div>
+      <button class="btn-add-task hidden" id="addTaskBtnAlt">＋ Add your first task</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ BOTTOM NAV ═══════════════ -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" id="navToday">
+    <span class="nav-tab-icon">🌅</span>
+    <span class="nav-tab-label">Today</span>
+  </button>
+  <button class="nav-tab" id="navGarden">
+    <span class="nav-tab-icon">🪴</span>
+    <span class="nav-tab-label">Garden</span>
+  </button>
+  <button class="nav-tab" id="navSettings">
+    <span class="nav-tab-icon">⚙️</span>
+    <span class="nav-tab-label">Settings</span>
+  </button>
+</nav>
+
+<!-- ═══════════════ ADD/EDIT PLANT MODAL ═══════════════ -->
+<div id="plantModal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-inner">
+      <div id="plantModalTitle" class="modal-title">Add a Plant 🌱</div>
+
+      <div class="form-group">
+        <label class="form-label">Plant Name</label>
+        <input type="text" id="plantName" class="form-input" placeholder="e.g. Cherry Tomatoes" maxlength="40" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Choose an Emoji</label>
+        <div class="emoji-row" id="emojiPicker"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Plant Type (optional)</label>
+        <select id="plantType" class="form-select">
+          <option value="">Select type…</option>
+          <option value="Vegetable">🥕 Vegetable</option>
+          <option value="Fruit">🍓 Fruit</option>
+          <option value="Herb">🌿 Herb</option>
+          <option value="Flower">🌸 Flower</option>
+          <option value="Berry">🫐 Berry</option>
+          <option value="Other">🌱 Other</option>
+        </select>
+      </div>
+
+      <div id="presetSection" class="form-group">
+        <label class="form-label">Quick Tasks to Add</label>
+        <div id="presetList"></div>
+      </div>
+
+      <button class="btn btn-primary" id="savePlantBtn">Save Plant</button>
+      <button class="btn btn-ghost" id="cancelPlantBtn">Cancel</button>
+      <div style="height:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADD/EDIT TASK MODAL ═══════════════ -->
+<div id="taskModal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="modal-inner">
+      <div id="taskModalTitle" class="modal-title">Add Task</div>
+
+      <div class="form-group">
+        <label class="form-label">Task Type</label>
+        <select id="taskType" class="form-select">
+          <option value="Water">💧 Water</option>
+          <option value="Fertilize">🧪 Fertilize</option>
+          <option value="Prune">✂️ Prune</option>
+          <option value="Harvest">🧺 Harvest</option>
+          <option value="Custom">✏️ Custom</option>
+        </select>
+      </div>
+
+      <div id="customNameGroup" class="form-group hidden">
+        <label class="form-label">Task Name</label>
+        <input type="text" id="customTaskName" class="form-input" placeholder="e.g. Check for pests" maxlength="30" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">How Often?</label>
+        <div class="freq-wrap">
+          <select id="taskFreq" class="form-select">
+            <option value="daily">Every day</option>
+            <option value="every_x">Every X days</option>
+            <option value="weekly">Every week (7 days)</option>
+          </select>
+          <input type="number" id="taskFreqDays" class="form-input freq-days-input hidden" min="2" max="365" value="3">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Last Completed</label>
+        <input type="date" id="taskLastDone" class="form-input">
+        <div class="small-text">Leave blank to mark as due today</div>
+      </div>
+
+      <button class="btn btn-primary" id="saveTaskBtn">Save Task</button>
+      <button class="btn btn-ghost" id="cancelTaskBtn">Cancel</button>
+      <div style="height:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM MODAL ═══════════════ -->
+<div id="confirmModal" class="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-drag"></div>
+    <div class="confirm-body">
+      <div id="confirmTitle" class="confirm-title"></div>
+      <div id="confirmText" class="confirm-text"></div>
+      <button class="btn btn-danger-soft" id="confirmOkBtn">Delete</button>
+      <button class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TOAST ═══════════════ -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════
+   JAVASCRIPT
+═══════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ────────────────────────────────────────────
+   CONSTANTS
+──────────────────────────────────────────── */
+const STORAGE_KEY = 'bgTracker_v2';
+
+const EMOJIS = [
+  '🍅','🥦','🥕','🥬','🌽','🫑','🍆','🥒','🧅','🧄',
+  '🍓','🍇','🍒','🍑','🫐','🍋','🍎','🍐','🌶',
+  '🌿','🪴','🌱','🌾','🌻','🌸','🌼','🌺','🫛'
+];
+
+const TASK_ICONS = {
+  Water:     '💧',
+  Fertilize: '🧪',
+  Prune:     '✂️',
+  Harvest:   '🧺',
+  Custom:    '⭐'
 };
 
-// ─── VIRTUES (Complete) ───────────────────────────────────────────────────────
-const VIRTUES = {
-  L: { key:"L", label:"Love", icon:"❤️", tagline:"Others-first in a me-first culture", color:"#ff4d4d", bg:"#fff0f0", border:"#ff8c00",
-       scoreMeaning: "0=Never • 1=Rarely • 2=Sometimes • 3=Consistently puts others first",
-       strong: ["Celebrates teammates' success", "Shows genuine kindness", "Puts team above self"],
-       weak:   ["Selfish on and off the field", "Dismisses or ignores teammates", "Only cheers for own highlights"],
-       develop: ["After each game, name one teammate who helped you win", "Do one act of encouragement before you leave the field", "Pray: 'Lord, help me love my teammates the way You love me'"] },
-  P: { key:"P", label:"Peace", icon:"☮️", tagline:"Calm anchored in Christ", color:"#00b36b", bg:"#f0fff4", border:"#ff8c00",
-       scoreMeaning: "0=Constant anxiety • 1=Occasional calm • 2=Usually calm • 3=Peace that guards the heart",
-       strong: ["Stays composed under pressure", "Calms teammates in tense moments", "Bounces back quickly from mistakes"],
-       weak:   ["Anxious or panicked when things go wrong", "Spreads tension to teammates", "Dwells on errors during play"],
-       develop: ["Practice three slow breaths before any big moment", "Write down one worry this week and give it to God in prayer", "Memorize Phil. 4:7 — let it anchor your pregame routine"] },
-  S: { key:"S", label:"Self-Control", icon:"🛡️", tagline:"Responding instead of reacting", color:"#0077cc", bg:"#f0f8ff", border:"#ff8c00",
-       scoreMeaning: "0=Frequent outbursts • 1=Improving • 2=Usually controlled • 3=Strong self-discipline",
-       strong: ["Responds to bad calls without blowing up", "Keeps emotions in check under provocation", "Leads by example in discipline"],
-       weak:   ["Frequent outbursts or meltdowns", "Argues with officials or coaches", "Lets frustration hurt performance"],
-       develop: ["Identify your #1 trigger — name it, then make a plan for it", "After a bad call, count to 5 before you react", "Ask a trusted teammate to hold you accountable this week"] },
-  G: { key:"G", label:"Gentleness", icon:"🌿", tagline:"Strength under control", color:"#9c4dff", bg:"#f8f0ff", border:"#ff8c00",
-       scoreMeaning: "0=Often harsh • 1=Sometimes gentle • 2=Usually gentle • 3=Strength under control",
-       strong: ["Encourages struggling teammates", "Competes hard without being cruel", "Uses words that build up, not tear down"],
-       weak:   ["Often harsh or cutting with words", "Intimidates or belittles others", "Confuses meanness with toughness"],
-       develop: ["Before criticizing a teammate, ask: 'Is this kind AND true?'", "Find one struggling player this week and intentionally encourage them", "Journal: where did strength AND gentleness show up together today?"] },
-  H: { key:"H", label:"Humility", icon:"🙏", tagline:"Playing from identity, not for identity", color:"#ff8c00", bg:"#fff8f0", border:"#ff8c00",
-       scoreMeaning: "0=Very prideful • 1=Occasional humility • 2=Growing humility • 3=Consistently humble",
-       strong: ["Credits teammates and coaches for success", "Accepts coaching without defensiveness", "Secure enough to celebrate others"],
-       weak:   ["Takes credit, deflects blame", "Gets defensive when corrected", "Needs to be the star"],
-       develop: ["After your next win, publicly credit two specific teammates", "When corrected by a coach, respond: 'Thank you, I'll work on that'", "Ask yourself: 'Am I playing TO prove something or FROM knowing who I am?'"] },
-  Gr: { key:"Gr", label:"Gratitude", icon:"🙌", tagline:"Thankful in all circumstances", color:"#ffaa00", bg:"#fffdf0", border:"#ff8c00",
-       scoreMeaning: "0=Very entitled • 1=Occasional thanks • 2=Usually grateful • 3=Thankful in all circumstances",
-       strong: ["Thanks coaches, officials, and opponents", "Grateful for the opportunity to compete", "Positive attitude win or lose"],
-       weak:   ["Entitled attitude about playing time or roles", "Rarely thanks others", "Complains about conditions, calls, or teammates"],
-       develop: ["Start every practice with one thing you're grateful for about this team", "Write a one-line thank-you to a coach or teammate this week", "After a loss, find three genuine things to be thankful for before you leave"] },
-  J: { key:"J", label:"Joy", icon:"🎉", tagline:"Delight that outlasts the score", color:"#ff6600", bg:"#fff4f0", border:"#ff8c00",
-       scoreMeaning: "0=Joy is gone • 1=Rare joy • 2=Usually joyful • 3=Consistent delight",
-       strong: ["Genuine enjoyment of the game", "Joy that doesn't depend on the scoreboard", "Lifts the energy of those around them"],
-       weak:   ["Only happy when winning", "Drains team energy with negativity", "Has lost the love of the game"],
-       develop: ["Recall why you first fell in love with this sport — write it down", "Find one moment in each practice to just enjoy the game", "Remind yourself: the scoreboard is temporary, but who you're becoming is not"] }
-};
+const PRESETS = [
+  { type:'Water',     label:'💧 Water',     freq:'daily',   days:1  },
+  { type:'Fertilize', label:'🧪 Fertilize', freq:'every_x', days:14 },
+  { type:'Prune',     label:'✂️ Prune',     freq:'weekly',  days:7  },
+  { type:'Harvest',   label:'🧺 Harvest',   freq:'every_x', days:3  },
+];
 
-const SCORE_LABELS = ["Missing", "Emerging", "Developing", "Strong"];
+/* ────────────────────────────────────────────
+   STATE
+──────────────────────────────────────────── */
+let state = { plants: [] };
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-function getCombo(scores) {
-  const strong = Object.values(scores).filter(v => v === 3).length;
-  const developing = Object.values(scores).filter(v => v >= 2).length;
-  const avg = (Object.values(scores).reduce((a,b) => a + b, 0) / 7).toFixed(1);
+// UI state — not persisted
+let currentView     = 'today';
+let currentPlantId  = null;  // plant shown in detail overlay
+let editingPlantId  = null;  // plant being edited in modal (null = adding new)
+let editingTaskId   = null;  // task being edited in modal (null = adding new)
+let selectedEmoji   = '🍅';
+let selectedPresets = new Set(['Water']);
+let notesTimer      = null;
+let confirmCb       = null;
 
-  if (strong >= 5) return { label: "Kingdom Competitor", icon: "🏆", desc: `Avg ${avg}/3`, color: C.orange, progress: 95 };
-  if (developing >= 6) return { label: "Strong Disciple", icon: "🌟", desc: `Avg ${avg}/3`, color: C.green, progress: 85 };
-  return { label: "Developing Disciple", icon: "🌱", desc: `Avg ${avg}/3`, color: "#fd7e14", progress: Math.round(developing / 7 * 100) };
+/* ────────────────────────────────────────────
+   DATE UTILS
+──────────────────────────────────────────── */
+
+/** Today as YYYY-MM-DD string (local timezone). */
+function today() {
+  const d = new Date();
+  return isoLocal(d);
 }
 
-function calculateTeamProgress(athletes) {
-  if (athletes.length === 0) return { avgScore: "0.0", strongPercent: 0, totalAthletes: 0 };
-  let totalScore = 0, totalStrong = 0;
-  const totalVirtues = athletes.length * 7;
+/** Convert Date → YYYY-MM-DD using local timezone. */
+function isoLocal(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
-  athletes.forEach(a => {
-    const scores = Object.values(a.scores || {});
-    totalScore += scores.reduce((a,b) => a + b, 0);
-    totalStrong += scores.filter(v => v === 3).length;
+/** Parse YYYY-MM-DD → local Date (avoids UTC offset bugs). */
+function parseLocal(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** Add n days to a YYYY-MM-DD string, return new string. */
+function addDays(dateStr, n) {
+  const d = parseLocal(dateStr);
+  d.setDate(d.getDate() + n);
+  return isoLocal(d);
+}
+
+/** Difference in whole days: positive = d2 is later than d1. */
+function daysDiff(d1Str, d2Str) {
+  const a = parseLocal(d1Str);
+  const b = parseLocal(d2Str);
+  return Math.round((b - a) / 86400000);
+}
+
+/** User-friendly display (e.g. "May 8"). */
+function displayDate(str) {
+  if (!str) return '—';
+  return parseLocal(str).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+
+/**
+ * Calculate next due date from a task object.
+ * Rules:
+ *   - No lastCompleted  → due today
+ *   - daily             → lastCompleted + 1
+ *   - every_x           → lastCompleted + frequencyDays
+ *   - weekly            → lastCompleted + 7
+ */
+function calcNextDue(task) {
+  if (!task.lastCompleted) return today();
+  let days;
+  switch (task.frequency) {
+    case 'daily':   days = 1; break;
+    case 'every_x': days = Math.max(2, parseInt(task.frequencyDays) || 2); break;
+    case 'weekly':  days = 7; break;
+    default:        days = 1;
+  }
+  return addDays(task.lastCompleted, days);
+}
+
+/** Returns true if task.nextDue is strictly before today (overdue). */
+function isOverdue(task) { return task.nextDue < today(); }
+
+/** Returns true if task needs attention today or earlier. */
+function isDue(task) { return task.nextDue <= today(); }
+
+/** Human-readable frequency label. */
+function freqLabel(task) {
+  if (task.frequency === 'daily')   return 'Every day';
+  if (task.frequency === 'weekly')  return 'Every week';
+  if (task.frequency === 'every_x') return `Every ${task.frequencyDays} days`;
+  return '';
+}
+
+/** Display name for a task (Custom → customName). */
+function taskLabel(task) {
+  return task.type === 'Custom' ? (task.customName || 'Custom Task') : task.type;
+}
+
+/** Unique ID generator. */
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+/* ────────────────────────────────────────────
+   PERSISTENCE
+──────────────────────────────────────────── */
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {
+    console.error('Save failed', e);
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.plants)) {
+      state = parsed;
+      // Always recalculate nextDue on load to handle date rollovers
+      state.plants.forEach(plant => {
+        (plant.tasks || []).forEach(task => {
+          task.nextDue = calcNextDue(task);
+        });
+      });
+    }
+  } catch(e) {
+    console.error('Load failed', e);
+    state = { plants: [] };
+  }
+}
+
+/* ────────────────────────────────────────────
+   HTML ESCAPE (XSS safety)
+──────────────────────────────────────────── */
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+/* ────────────────────────────────────────────
+   NAVIGATION
+──────────────────────────────────────────── */
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+  const viewId = 'view' + view.charAt(0).toUpperCase() + view.slice(1);
+  const navId  = 'nav'  + view.charAt(0).toUpperCase() + view.slice(1);
+  document.getElementById(viewId).classList.add('active');
+  document.getElementById(navId).classList.add('active');
+
+  renderView();
+}
+
+function renderView() {
+  if (currentView === 'today')    renderToday();
+  else if (currentView === 'garden') renderGarden();
+}
+
+/* ────────────────────────────────────────────
+   TODAY VIEW
+──────────────────────────────────────────── */
+function renderToday() {
+  const t = today();
+  const allDue = [];
+
+  state.plants.forEach(plant => {
+    (plant.tasks || []).forEach(task => {
+      if (isDue(task)) allDue.push({ plant, task });
+    });
   });
 
-  const avgScore = (totalScore / totalVirtues).toFixed(1);
-  const strongPercent = Math.round((totalStrong / totalVirtues) * 100);
+  // Sort: most overdue first, then today-due
+  allDue.sort((a, b) => {
+    return daysDiff(b.task.nextDue, t) - daysDiff(a.task.nextDue, t);
+  });
 
-  return { avgScore, strongPercent, totalAthletes: athletes.length };
-}
+  const badge   = document.getElementById('todayBadge');
+  const content = document.getElementById('todayContent');
 
-// ─── MODALS ───────────────────────────────────────────────────────────────────
-function Modal({title, onClose, children}) {
-  return (
-    <div style={{position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", zIndex:500, display:"flex", alignItems:"center", justifyContent:"center"}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div style={{background:"#fff", borderRadius:16, width:"92%", maxWidth:720, maxHeight:"92vh", overflow:"hidden", boxShadow:"0 25px 70px rgba(0,0,0,0.25)"}}>
-        <div style={{padding:"18px 24px", borderBottom:"1px solid #dee2e6", display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-          <span style={{fontSize:21, fontWeight:800, color:C.orange}}>{title}</span>
-          <button onClick={onClose} style={{fontSize:24, background:"none", border:"none", color:"#666"}}>✕</button>
-        </div>
-        <div style={{padding:24, overflowY:"auto", maxHeight:"78vh"}}>{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function ConfirmDelete({name, onConfirm, onCancel}) {
-  return (
-    <Modal title="Delete Athlete" onClose={onCancel}>
-      <p style={{fontSize:16, marginBottom:24}}>Are you sure you want to permanently delete <strong>{name}</strong>?</p>
-      <p style={{color:"#ef4444", marginBottom:24}}>This cannot be undone.</p>
-      <div style={{display:"flex", gap:12, justifyContent:"flex-end"}}>
-        <button onClick={onCancel} style={{padding:"12px 24px", border:"none", background:"#ddd", borderRadius:10}}>Cancel</button>
-        <button onClick={onConfirm} style={{padding:"12px 28px", border:"none", background:"#ef4444", color:"#fff", borderRadius:10, fontWeight:700}}>Yes, Delete</button>
-      </div>
-    </Modal>
-  );
-}
-
-// ─── EDIT MODAL ───────────────────────────────────────────────────────────────
-function EditModal({person, onSave, onClose}) {
-  const [data, setData] = useState({...person, notes: person.notes || ""});
-
-  const updateScore = (key, value) => setData(prev => ({...prev, scores: {...prev.scores, [key]: Number(value)}}));
-
-  return (
-    <Modal title={data.id ? "Edit Athlete" : "Add New Athlete"} onClose={onClose}>
-      <input placeholder="Athlete Name *" value={data.name||""} onChange={e=>setData({...data,name:e.target.value})} style={{width:"100%", padding:14, fontSize:17, border:`2px solid ${C.border}`, borderRadius:10, marginBottom:12}} />
-      <input placeholder="Role / Team (optional)" value={data.role||""} onChange={e=>setData({...data,role:e.target.value})} style={{width:"100%", padding:14, fontSize:17, border:`2px solid ${C.border}`, borderRadius:10, marginBottom:20}} />
-
-      <div style={{marginBottom:20}}>
-        <div style={{fontWeight:700, color:C.orange, marginBottom:12}}>Score Each Virtue (0–3)</div>
-        {Object.values(VIRTUES).map(t => (
-          <div key={t.key} style={{marginBottom:16, padding:16, background:"#fff", border:`1px solid ${t.border}`, borderRadius:12}}>
-            <div style={{display:"flex", alignItems:"center", gap:12, marginBottom:8}}>
-              <span style={{fontSize:28}}>{t.icon}</span>
-              <div style={{flex:1, fontWeight:700, color:t.color}}>{t.label}</div>
-            </div>
-            <div style={{fontSize:13, color:"#555", marginBottom:10}}>{t.scoreMeaning}</div>
-            <div style={{display:"flex", gap:6}}>
-              {[0,1,2,3].map(n => (
-                <button key={n} onClick={()=>updateScore(t.key,n)} style={{flex:1, padding:"10px", borderRadius:8, background: data.scores[t.key]===n ? C.orange : "#f1f3f5", color: data.scores[t.key]===n ? "#fff" : "#333", fontWeight:700}}>
-                  {n}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{marginBottom:20}}>
-        <div style={{fontWeight:700, marginBottom:8}}>Notes / Observations / Prayers</div>
-        <textarea value={data.notes} onChange={e=>setData({...data, notes:e.target.value})} placeholder="Key moments, growth areas, specific prayers..." style={{width:"100%", height:130, padding:14, border:`2px solid ${C.border}`, borderRadius:10, resize:"vertical"}} />
-      </div>
-
-      <div style={{display:"flex", gap:12, justifyContent:"flex-end"}}>
-        <button onClick={onClose} style={{padding:"12px 24px", border:"none", background:"#ddd", borderRadius:10}}>Cancel</button>
-        <button onClick={()=>onSave(data)} style={{padding:"12px 32px", border:"none", background:C.orange, color:"#fff", borderRadius:10, fontWeight:700}} disabled={!data.name?.trim()}>💾 Save Changes</button>
-      </div>
-    </Modal>
-  );
-}
-
-// ─── PERSON DETAIL ────────────────────────────────────────────────────────────
-function PersonDetail({person, onClose, onEdit}) {
-  const [tab, setTab] = useState("assess");
-  const combo = getCombo(person.scores);
-
-  return (
-    <Modal title={person.name} onClose={onClose}>
-      <div style={{display:"flex", justifyContent:"space-between", marginBottom:20}}>
-        <div>
-          <div style={{fontSize:52}}>{combo.icon}</div>
-          <div style={{fontSize:24, fontWeight:800, color:combo.color}}>{combo.label}</div>
-        </div>
-        <button onClick={()=>{ onEdit(person); onClose(); }} style={{background:C.orange, color:"#fff", border:"none", padding:"10px 22px", borderRadius:10, fontWeight:700}}>✏ Edit</button>
-      </div>
-
-      <div style={{marginBottom:24}}>
-        <div style={{display:"flex", justifyContent:"space-between", fontSize:14, marginBottom:8}}>
-          <span>Character Progress</span>
-          <span>{combo.progress}%</span>
-        </div>
-        <div className="progress-bar">
-          <div className="progress-fill" style={{width: `${combo.progress}%`, background: combo.progress > 80 ? "linear-gradient(90deg,#00b36b,#34d399)" : combo.progress > 50 ? "linear-gradient(90deg,#ff8c00,#ffaa00)" : "#dc3545"}} />
-        </div>
-        <div style={{fontSize:13, color:C.textMuted, marginTop:6}}>
-          Last updated: {person.lastUpdated ? new Date(person.lastUpdated).toLocaleDateString() : "Never"}
-        </div>
-      </div>
-
-      <div style={{display:"flex", borderBottom:"3px solid #ff8c00", marginBottom:20}}>
-        {["assess","develop","notes"].map(t => (
-          <button key={t} onClick={()=>setTab(t)} style={{flex:1, padding:"14px", fontWeight:700, background:tab===t?C.orange:"#f1f3f5", color:tab===t?"#fff":"#333", border:"none"}}>
-            {t==="assess"?"📊 Profile":t==="develop"?"🛠 Develop":"📝 Notes"}
-          </button>
-        ))}
-      </div>
-
-      {tab==="assess" && Object.entries(person.scores).map(([k,v]) => {
-        const t = VIRTUES[k];
-        const showHas = v >= 2;
-        return (
-          <div key={k} style={{marginBottom:20, background:"#fff", border:`2px solid ${t.border}`, borderRadius:14, overflow:"hidden"}}>
-            <div style={{background:t.bg, padding:"16px 20px", display:"flex", alignItems:"center", gap:16}}>
-              <span style={{fontSize:42}}>{t.icon}</span>
-              <div style={{flex:1}}><div style={{fontSize:21, fontWeight:800, color:t.color}}>{t.label}</div></div>
-              <span style={{fontSize:18, fontWeight:700}}>{v}/3</span>
-            </div>
-            <div style={{padding:"20px"}}>
-              {(showHas ? t.strong : t.weak).map((s,i) => (
-                <div key={i} style={{marginBottom:6}}>{showHas?"→":"–"} {s}</div>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-
-      {tab==="develop" && (
-        <div>
-          {Object.entries(person.scores).map(([k,v]) => {
-            const t = VIRTUES[k];
-            return (
-              <div key={k} style={{marginBottom:20, background:"#fff", border:`2px solid ${t.border}`, borderRadius:14, overflow:"hidden"}}>
-                <div style={{background:t.bg, padding:"14px 20px", display:"flex", alignItems:"center", gap:12}}>
-                  <span style={{fontSize:28}}>{t.icon}</span>
-                  <div style={{fontSize:18, fontWeight:800, color:t.color, flex:1}}>{t.label}</div>
-                  <span style={{fontSize:14, color:C.textMuted, background:"#fff", padding:"4px 10px", borderRadius:20, fontWeight:700}}>{SCORE_LABELS[v]}</span>
-                </div>
-                <div style={{padding:"16px 20px"}}>
-                  {t.develop.map((step,i) => (
-                    <div key={i} style={{display:"flex", gap:12, marginBottom:10, alignItems:"flex-start"}}>
-                      <span style={{background:C.orange, color:"#fff", borderRadius:"50%", width:22, height:22, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, flexShrink:0}}>{i+1}</span>
-                      <span style={{fontSize:14, color:C.text, lineHeight:1.5}}>{step}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {tab==="notes" && (
-        <div style={{background:"#fff", border:`1px solid ${C.border}`, borderRadius:12, padding:24, minHeight:200, whiteSpace:"pre-wrap", fontSize:15}}>
-          {person.notes || "No notes added yet."}
-        </div>
-      )}
-    </Modal>
-  );
-}
-
-const BLANK_ATHLETE = { id:"", name:"", role:"", notes:"", scores:{L:1,P:1,S:1,G:1,H:1,Gr:1,J:1}, lastUpdated: null };
-
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
-function App() {
-  const [tab, setTab] = useState("athletes");
-  const [athletes, setAthletes] = useState(() => load("awaygame_athletes_v1", []));
-  const [editing, setEditing] = useState(null);
-  const [viewing, setViewing] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
-
-  function saveAthlete(p) {
-    const updated = {...p, id: p.id || uid(), lastUpdated: Date.now()};
-    const next = p.id ? athletes.map(x => x.id === p.id ? updated : x) : [...athletes, updated];
-    setAthletes(next);
-    save("awaygame_athletes_v1", next);
-    setEditing(null);
+  if (allDue.length === 0) {
+    badge.textContent = 'All done ✓';
+    badge.className = 'badge good';
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🌞</div>
+        <div class="empty-title">Garden's all good!</div>
+        <div class="empty-body">Nothing needs attention today. Enjoy your garden — check back tomorrow.</div>
+        <button class="btn-sm btn-sm-sage" id="goGardenBtn">View My Garden →</button>
+      </div>`;
+    document.getElementById('goGardenBtn').addEventListener('click', () => switchView('garden'));
+    return;
   }
 
-  function deleteAthlete(id) {
-    const next = athletes.filter(a => a.id !== id);
-    setAthletes(next);
-    save("awaygame_athletes_v1", next);
-    setDeleteConfirm(null);
-    if (viewing && viewing.id === id) setViewing(null);
+  badge.textContent = allDue.length + ' task' + (allDue.length !== 1 ? 's' : '');
+  badge.className = 'badge';
+
+  const overdue   = allDue.filter(x => isOverdue(x.task));
+  const dueToday  = allDue.filter(x => !isOverdue(x.task));
+
+  let html = '';
+
+  if (overdue.length) {
+    html += `<div class="section-label">⚠️ Overdue</div><div class="task-list">`;
+    overdue.forEach((x, i) => { html += buildTaskCard(x.plant, x.task, i); });
+    html += '</div>';
   }
 
-  const teamStats = calculateTeamProgress(athletes);
+  if (dueToday.length) {
+    html += `<div class="section-label">📋 Due Today</div><div class="task-list">`;
+    dueToday.forEach((x, i) => { html += buildTaskCard(x.plant, x.task, overdue.length + i); });
+    html += '</div>';
+  }
 
-  return (
-    <div style={{minHeight:"100vh", background:"#f8f9fa"}}>
-      {/* HEADER */}
-      <div style={{background:"#fff", borderBottom:"4px solid #ff8c00", padding:"0 24px", height:76, display:"flex", alignItems:"center", justifyContent:"space-between", boxShadow:"0 3px 12px rgba(0,0,0,0.1)"}}>
-        <div>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif", fontWeight:900, fontSize:32, letterSpacing:1.5, color:C.orange}}>AWAY GAME</div>
-          <div style={{fontSize:13, color:"#555"}}>Christian Parent’s Playbook</div>
-        </div>
-        <div style={{display:"flex", gap:8}}>
-          <button onClick={()=>setTab("athletes")} style={{padding:"10px 22px", borderRadius:10, background:tab==="athletes"?C.orange:"#fff", color:tab==="athletes"?"#fff":"#333", fontWeight:700, border:"2px solid #ff8c00"}}>👥 My Athletes</button>
-          <button onClick={()=>setTab("playbook")} style={{padding:"10px 22px", borderRadius:10, background:tab==="playbook"?C.orange:"#fff", color:tab==="playbook"?"#fff":"#333", fontWeight:700, border:"2px solid #ff8c00"}}>📖 The Playbook</button>
-        </div>
+  content.innerHTML = html;
+
+  // Attach mark-done listeners (event delegation approach for safety)
+  content.querySelectorAll('[data-done-plant]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      markDone(btn.dataset.donePlant, btn.dataset.doneTask, btn.closest('.task-card'));
+    });
+  });
+}
+
+function buildTaskCard(plant, task, idx) {
+  const t        = today();
+  const overdue  = isOverdue(task);
+  const daysPast = overdue ? daysDiff(task.nextDue, t) : 0;
+  const metaTxt  = overdue
+    ? `${daysPast} day${daysPast !== 1 ? 's' : ''} overdue`
+    : 'Due today';
+  const delay    = Math.min(idx * 0.05, 0.4).toFixed(2);
+
+  return `
+    <div class="task-card${overdue ? ' overdue' : ''}" id="tc_${plant.id}_${task.id}" style="animation-delay:${delay}s">
+      <div class="task-card-icon">${TASK_ICONS[task.type] || '⭐'}</div>
+      <div class="task-card-body">
+        <div class="task-card-name">${esc(taskLabel(task))} ${esc(plant.emoji || '🌱')}</div>
+        <div class="task-card-plant">${esc(plant.name)}</div>
+        <div class="task-card-meta${overdue ? '' : ' today-meta'}">${metaTxt}</div>
       </div>
+      <button class="btn-done" data-done-plant="${plant.id}" data-done-task="${task.id}">✅ Done</button>
+    </div>`;
+}
 
-      {tab === "athletes" && (
-        <div style={{padding:24}}>
-          {/* TEAM PROGRESS DASHBOARD */}
-          {athletes.length > 0 && (
-            <div className="team-card" style={{marginBottom:32}}>
-              <div style={{fontSize:20, fontWeight:800, marginBottom:16, color:C.orange}}>Team Progress Overview</div>
-              <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(180px, 1fr))", gap:20}}>
-                <div>
-                  <div style={{fontSize:13, color:C.textMuted}}>Team Average Score</div>
-                  <div style={{fontSize:32, fontWeight:800, color:C.orange}}>{teamStats.avgScore}</div>
-                  <div style={{fontSize:13}}>out of 3.0</div>
-                </div>
-                <div>
-                  <div style={{fontSize:13, color:C.textMuted}}>Strong Virtues</div>
-                  <div style={{fontSize:32, fontWeight:800, color: teamStats.strongPercent > 70 ? C.green : C.orange}}>{teamStats.strongPercent}%</div>
-                </div>
-                <div>
-                  <div style={{fontSize:13, color:C.textMuted}}>Athletes Tracked</div>
-                  <div style={{fontSize:32, fontWeight:800}}>{teamStats.totalAthletes}</div>
-                </div>
-              </div>
-            </div>
-          )}
+function markDone(plantId, taskId, cardEl) {
+  const plant = state.plants.find(p => p.id === plantId);
+  if (!plant) return;
+  const task = (plant.tasks || []).find(t => t.id === taskId);
+  if (!task) return;
 
-          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:28}}>
-            <h1 style={{fontSize:28, fontWeight:800}}>My Athletes</h1>
-            <button onClick={()=>setEditing(BLANK_ATHLETE)} style={{background:C.orange, color:"#fff", border:"none", padding:"12px 28px", borderRadius:12, fontWeight:700}}>＋ Add Athlete</button>
-          </div>
+  task.lastCompleted = today();
+  task.nextDue = calcNextDue(task);
+  saveState();
 
-          {athletes.length === 0 ? (
-            <div style={{textAlign:"center", padding:"120px 20px", color:"#666"}}>
-              <div style={{fontSize:80}}>⚽️🏀🏈</div>
-              <div style={{fontSize:24, margin:"20px 0"}}>Start building your team’s character</div>
-              <button onClick={()=>setEditing(BLANK_ATHLETE)} style={{background:C.orange, color:"#fff", padding:"14px 36px", borderRadius:12, fontSize:17, fontWeight:700}}>Add Your First Athlete</button>
-            </div>
-          ) : (
-            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(310px, 1fr))", gap:20}}>
-              {athletes.map(p => {
-                const combo = getCombo(p.scores);
-                return (
-                  <div key={p.id} style={{background:"#fff", border:`1px solid ${C.border}`, borderRadius:16, padding:22, boxShadow:"0 6px 20px rgba(0,0,0,0.07)", position:"relative"}}>
-                    <button 
-                      onClick={(e)=>{e.stopPropagation(); setDeleteConfirm(p);}} 
-                      className="delete-btn" 
-                      style={{position:"absolute", top:12, right:12}}
-                    >
-                      🗑
-                    </button>
-                    
-                    <div onClick={()=>setViewing(p)} style={{cursor:"pointer"}}>
-                      <div style={{fontSize:22, fontWeight:800, marginBottom:8}}>{p.name}</div>
-                      {p.role && <div style={{color:C.textSub, marginBottom:12}}>{p.role}</div>}
-                      
-                      <div style={{display:"flex", gap:8, flexWrap:"wrap", marginBottom:16}}>
-                        {Object.entries(p.scores).map(([k,v]) => (
-                          <div key={k} style={{background:VIRTUES[k].bg, padding:"6px 10px", borderRadius:8, fontSize:14}}>{VIRTUES[k].icon} {v}</div>
-                        ))}
-                      </div>
+  const label = taskLabel(task);
 
-                      <div style={{marginBottom:12}}>
-                        <div className="progress-bar">
-                          <div className="progress-fill" style={{width: `${combo.progress}%`, background: combo.progress > 80 ? "linear-gradient(90deg,#00b36b,#34d399)" : combo.progress > 50 ? "linear-gradient(90deg,#ff8c00,#ffaa00)" : "#dc3545"}} />
-                        </div>
-                      </div>
+  if (cardEl) {
+    cardEl.style.transition = 'opacity 0.28s ease, transform 0.28s ease';
+    cardEl.style.opacity    = '0';
+    cardEl.style.transform  = 'translateX(16px)';
+    setTimeout(() => { renderToday(); showToast(`✅ ${label} done!`); }, 270);
+  } else {
+    renderToday();
+    showToast(`✅ ${label} done!`);
+  }
+}
 
-                      <div style={{fontSize:13, color:C.textMuted}}>Last updated: {p.lastUpdated ? new Date(p.lastUpdated).toLocaleDateString() : "Never"}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+/* ────────────────────────────────────────────
+   GARDEN VIEW
+──────────────────────────────────────────── */
+function renderGarden() {
+  const content = document.getElementById('gardenContent');
+
+  if (!state.plants.length) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🌱</div>
+        <div class="empty-title">Your garden awaits</div>
+        <div class="empty-body">Add your first plant to start tracking watering, fertilizing, harvesting, and more.</div>
+        <button class="btn-sm btn-sm-sage" id="firstPlantBtn">＋ Add First Plant</button>
+      </div>`;
+    document.getElementById('firstPlantBtn').addEventListener('click', openAddPlant);
+    return;
+  }
+
+  let html = '<div class="plant-grid">';
+  state.plants.forEach((plant, idx) => {
+    const tasks   = plant.tasks || [];
+    const nOver   = tasks.filter(isOverdue).length;
+    const nDue    = tasks.filter(t => !isOverdue(t) && isDue(t)).length;
+    const delay   = Math.min(idx * 0.05, 0.4).toFixed(2);
+
+    let pill = '';
+    if (nOver)         pill = `<span class="plant-pill pill-overdue">${nOver} overdue</span>`;
+    else if (nDue)     pill = `<span class="plant-pill pill-due">${nDue} due today</span>`;
+    else if (tasks.length) pill = `<span class="plant-pill pill-good">All good ✓</span>`;
+    else               pill = `<span class="plant-pill pill-none">No tasks</span>`;
+
+    // Next upcoming task label
+    const next = tasks
+      .filter(t => !isDue(t))
+      .sort((a,b) => a.nextDue.localeCompare(b.nextDue))[0];
+    const nextTxt = next
+      ? `Next: ${taskLabel(next)} ${displayDate(next.nextDue)}`
+      : '';
+
+    html += `
+      <div class="plant-card${nOver ? ' has-overdue' : ''}" data-plant-id="${plant.id}" style="animation-delay:${delay}s">
+        <div class="plant-card-stripe"></div>
+        <span class="plant-card-emoji">${esc(plant.emoji || '🌱')}</span>
+        <div class="plant-card-name">${esc(plant.name)}</div>
+        <div class="plant-card-next">${esc(nextTxt)}</div>
+        ${pill}
+      </div>`;
+  });
+  html += '</div>';
+  content.innerHTML = html;
+
+  content.querySelectorAll('.plant-card').forEach(card => {
+    card.addEventListener('click', () => openDetail(card.dataset.plantId));
+  });
+}
+
+/* ────────────────────────────────────────────
+   PLANT DETAIL OVERLAY
+──────────────────────────────────────────── */
+function openDetail(plantId) {
+  const plant = state.plants.find(p => p.id === plantId);
+  if (!plant) return;
+  currentPlantId = plantId;
+
+  document.getElementById('detailEmoji').textContent = plant.emoji || '🌱';
+  document.getElementById('detailName').textContent  = plant.name;
+  document.getElementById('detailType').textContent  = plant.type || '';
+  document.getElementById('detailNotes').value       = plant.notes || '';
+
+  renderDetailTasks(plant);
+
+  document.getElementById('detailOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+  currentPlantId = null;
+  renderView();
+}
+
+function renderDetailTasks(plant) {
+  const list = document.getElementById('detailTasksList');
+  const altBtn = document.getElementById('addTaskBtnAlt');
+  const tasks  = plant.tasks || [];
+
+  if (!tasks.length) {
+    list.innerHTML = '';
+    altBtn.classList.remove('hidden');
+    return;
+  }
+  altBtn.classList.add('hidden');
+
+  const t = today();
+  let html = '';
+
+  tasks.forEach(task => {
+    const over     = isOverdue(task);
+    const dueNow   = !over && isDue(task);
+    const daysUntil = daysDiff(t, task.nextDue);
+    const daysPast  = over ? daysDiff(task.nextDue, t) : 0;
+
+    let nextLabel;
+    if (over)         nextLabel = `${daysPast} day${daysPast !== 1 ? 's' : ''} overdue`;
+    else if (dueNow)  nextLabel = 'Due today';
+    else              nextLabel = `Next: ${displayDate(task.nextDue)} (in ${daysUntil}d)`;
+
+    html += `
+      <div class="task-det-card">
+        <span class="task-det-icon">${TASK_ICONS[task.type] || '⭐'}</span>
+        <div class="task-det-info">
+          <div class="task-det-name">${esc(taskLabel(task))}</div>
+          <div class="task-det-freq">${freqLabel(task)}</div>
+          <div class="task-det-next${over ? ' overdue' : ''}">${nextLabel}</div>
         </div>
-      )}
-
-      {tab === "playbook" && (
-        <div style={{padding:24, maxWidth:820, margin:"0 auto"}}>
-          <h2 style={{color:C.orange, marginBottom:8}}>The Seven Virtues</h2>
-          <p style={{color:C.textSub, marginBottom:32}}>Fruit of the Spirit applied to youth sports.</p>
-          {Object.values(VIRTUES).map(t => (
-            <div key={t.key} style={{marginBottom:24, background:"#fff", border:`1px solid ${t.border}`, borderRadius:16, padding:24}}>
-              <div style={{display:"flex", alignItems:"center", gap:16}}>
-                <span style={{fontSize:48}}>{t.icon}</span>
-                <div>
-                  <div style={{fontSize:22, fontWeight:800, color:t.color}}>{t.label}</div>
-                  <div style={{color:C.textSub}}>"{t.tagline}"</div>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div class="task-det-actions">
+          <button class="icon-btn" data-edit-task="${task.id}" title="Edit">✏️</button>
+          <button class="icon-btn" data-del-task="${task.id}" title="Delete">🗑️</button>
         </div>
-      )}
+      </div>`;
+  });
 
-      {editing && <EditModal person={editing} onSave={saveAthlete} onClose={()=>setEditing(null)} />}
-      {viewing && <PersonDetail person={viewing} onClose={()=>setViewing(null)} onEdit={p=>{setViewing(null); setEditing(p);}} />}
-      {deleteConfirm && <ConfirmDelete name={deleteConfirm.name} onConfirm={()=>deleteAthlete(deleteConfirm.id)} onCancel={()=>setDeleteConfirm(null)} />}
-    </div>
+  list.innerHTML = html;
+
+  // Attach task action listeners
+  list.querySelectorAll('[data-edit-task]').forEach(btn => {
+    btn.addEventListener('click', () => openEditTask(btn.dataset.editTask));
+  });
+  list.querySelectorAll('[data-del-task]').forEach(btn => {
+    btn.addEventListener('click', () => confirmDeleteTask(btn.dataset.delTask));
+  });
+}
+
+function saveNotes() {
+  if (!currentPlantId) return;
+  const plant = state.plants.find(p => p.id === currentPlantId);
+  if (!plant) return;
+  plant.notes = document.getElementById('detailNotes').value;
+  saveState();
+}
+
+/* ────────────────────────────────────────────
+   ADD / EDIT PLANT MODAL
+──────────────────────────────────────────── */
+function openAddPlant() {
+  editingPlantId  = null;
+  selectedEmoji   = '🍅';
+  selectedPresets = new Set(['Water']);
+
+  document.getElementById('plantModalTitle').textContent = 'Add a Plant 🌱';
+  document.getElementById('plantName').value  = '';
+  document.getElementById('plantType').value  = '';
+  document.getElementById('presetSection').classList.remove('hidden');
+
+  renderEmojiPicker();
+  renderPresetList();
+  openModal('plantModal');
+}
+
+function openEditPlant(plantId) {
+  const plant = state.plants.find(p => p.id === plantId);
+  if (!plant) return;
+  editingPlantId = plantId;
+  selectedEmoji  = plant.emoji || '🍅';
+
+  document.getElementById('plantModalTitle').textContent = 'Edit Plant ✏️';
+  document.getElementById('plantName').value  = plant.name;
+  document.getElementById('plantType').value  = plant.type || '';
+  document.getElementById('presetSection').classList.add('hidden');
+
+  renderEmojiPicker();
+  openModal('plantModal');
+}
+
+function renderEmojiPicker() {
+  const container = document.getElementById('emojiPicker');
+  container.innerHTML = EMOJIS.map((e, i) =>
+    `<button class="emoji-opt${e === selectedEmoji ? ' sel' : ''}" data-emoji-idx="${i}">${e}</button>`
+  ).join('');
+  container.querySelectorAll('.emoji-opt').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      selectedEmoji = EMOJIS[i];
+      container.querySelectorAll('.emoji-opt').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+    });
+  });
+}
+
+function renderPresetList() {
+  const container = document.getElementById('presetList');
+  container.innerHTML = PRESETS.map(p => {
+    const sel = selectedPresets.has(p.type);
+    const fLabel = p.freq === 'daily' ? 'Daily' : p.freq === 'weekly' ? 'Weekly' : `Every ${p.days}d`;
+    return `
+      <div class="preset-row${sel ? ' sel' : ''}" data-preset-type="${esc(p.type)}">
+        <div class="preset-check">${sel ? '✓' : ''}</div>
+        <span class="preset-label">${esc(p.label)}</span>
+        <span class="preset-freq">${fLabel}</span>
+      </div>`;
+  }).join('');
+  container.querySelectorAll('.preset-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const type = row.dataset.presetType;
+      if (selectedPresets.has(type)) selectedPresets.delete(type);
+      else selectedPresets.add(type);
+      renderPresetList();
+    });
+  });
+}
+
+function savePlant() {
+  const name = document.getElementById('plantName').value.trim();
+  if (!name) { showToast('Please enter a plant name'); return; }
+
+  if (editingPlantId) {
+    const plant = state.plants.find(p => p.id === editingPlantId);
+    if (!plant) return;
+    plant.name  = name;
+    plant.emoji = selectedEmoji;
+    plant.type  = document.getElementById('plantType').value;
+
+    // Refresh detail header if open
+    if (currentPlantId === editingPlantId) {
+      document.getElementById('detailEmoji').textContent = plant.emoji;
+      document.getElementById('detailName').textContent  = plant.name;
+      document.getElementById('detailType').textContent  = plant.type || '';
+    }
+    saveState();
+    closeModal('plantModal');
+    showToast('Plant updated ✓');
+  } else {
+    const tasks = [];
+    selectedPresets.forEach(type => {
+      const preset = PRESETS.find(p => p.type === type);
+      if (preset) {
+        tasks.push({
+          id:            genId(),
+          type:          preset.type,
+          customName:    '',
+          frequency:     preset.freq,
+          frequencyDays: preset.days,
+          lastCompleted: null,
+          nextDue:       today()   // never done → due today
+        });
+      }
+    });
+
+    const newPlant = {
+      id:        genId(),
+      name,
+      emoji:     selectedEmoji,
+      type:      document.getElementById('plantType').value,
+      notes:     '',
+      dateAdded: today(),
+      tasks
+    };
+    state.plants.push(newPlant);
+    saveState();
+    closeModal('plantModal');
+    renderView();
+    showToast(`${name} added to your garden! 🌱`);
+  }
+}
+
+/* ────────────────────────────────────────────
+   ADD / EDIT TASK MODAL
+──────────────────────────────────────────── */
+function openAddTask() {
+  if (!currentPlantId) return;
+  editingTaskId = null;
+
+  document.getElementById('taskModalTitle').textContent = 'Add Task';
+  document.getElementById('taskType').value   = 'Water';
+  document.getElementById('taskFreq').value   = 'daily';
+  document.getElementById('taskFreqDays').value = '3';
+  document.getElementById('taskLastDone').value = '';
+  document.getElementById('customNameGroup').classList.add('hidden');
+  document.getElementById('taskFreqDays').classList.add('hidden');
+
+  openModal('taskModal');
+}
+
+function openEditTask(taskId) {
+  if (!currentPlantId) return;
+  const plant = state.plants.find(p => p.id === currentPlantId);
+  if (!plant) return;
+  const task = (plant.tasks || []).find(t => t.id === taskId);
+  if (!task) return;
+
+  editingTaskId = taskId;
+
+  document.getElementById('taskModalTitle').textContent    = 'Edit Task';
+  document.getElementById('taskType').value                = task.type;
+  document.getElementById('taskFreq').value                = task.frequency;
+  document.getElementById('taskFreqDays').value            = task.frequencyDays || 3;
+  document.getElementById('taskLastDone').value            = task.lastCompleted || '';
+  document.getElementById('customTaskName').value          = task.customName || '';
+  document.getElementById('customNameGroup').classList.toggle('hidden', task.type !== 'Custom');
+  document.getElementById('taskFreqDays').classList.toggle('hidden', task.frequency !== 'every_x');
+
+  openModal('taskModal');
+}
+
+function saveTask() {
+  if (!currentPlantId) return;
+  const plant = state.plants.find(p => p.id === currentPlantId);
+  if (!plant) return;
+
+  const type         = document.getElementById('taskType').value;
+  const customName   = document.getElementById('customTaskName').value.trim();
+  const frequency    = document.getElementById('taskFreq').value;
+  const frequencyDays = parseInt(document.getElementById('taskFreqDays').value) || 3;
+  const lastCompleted = document.getElementById('taskLastDone').value || null;
+
+  if (type === 'Custom' && !customName) {
+    showToast('Please enter a task name');
+    return;
+  }
+  if (frequency === 'every_x' && (frequencyDays < 2 || frequencyDays > 365)) {
+    showToast('Frequency must be 2–365 days');
+    return;
+  }
+
+  const taskData = { type, customName: type === 'Custom' ? customName : '', frequency, frequencyDays, lastCompleted };
+  taskData.nextDue = calcNextDue(taskData);
+
+  if (editingTaskId) {
+    const task = (plant.tasks || []).find(t => t.id === editingTaskId);
+    if (!task) return;
+    Object.assign(task, taskData);
+  } else {
+    plant.tasks = plant.tasks || [];
+    plant.tasks.push({ id: genId(), ...taskData });
+  }
+
+  saveState();
+  closeModal('taskModal');
+  renderDetailTasks(plant);
+  showToast(editingTaskId ? 'Task updated ✓' : 'Task added ✓');
+}
+
+/* ────────────────────────────────────────────
+   DELETE HANDLERS
+──────────────────────────────────────────── */
+function confirmDeleteTask(taskId) {
+  const plant = state.plants.find(p => p.id === currentPlantId);
+  if (!plant) return;
+  const task = (plant.tasks || []).find(t => t.id === taskId);
+  if (!task) return;
+
+  showConfirm(
+    'Delete Task?',
+    `"${taskLabel(task)}" will be permanently removed from ${plant.name}.`,
+    () => {
+      plant.tasks = plant.tasks.filter(t => t.id !== taskId);
+      saveState();
+      renderDetailTasks(plant);
+      showToast('Task deleted');
+    }
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(App));
+function confirmDeletePlant() {
+  const plant = state.plants.find(p => p.id === currentPlantId);
+  if (!plant) return;
+  showConfirm(
+    `Delete ${plant.name}?`,
+    'This will permanently remove the plant and all its tasks and notes.',
+    () => {
+      state.plants = state.plants.filter(p => p.id !== currentPlantId);
+      saveState();
+      closeDetail();
+      showToast('Plant removed');
+    }
+  );
+}
+
+/* ────────────────────────────────────────────
+   IMPORT / EXPORT
+──────────────────────────────────────────── */
+function exportData() {
+  try {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `garden-backup-${today()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup downloaded ✓');
+  } catch(e) {
+    showToast('Export failed — try again');
+    console.error(e);
+  }
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || !Array.isArray(parsed.plants)) {
+        showToast('Invalid backup file');
+        return;
+      }
+      showConfirm(
+        'Import Data?',
+        `Replace all current data with ${parsed.plants.length} plant(s) from this backup?`,
+        () => {
+          state = parsed;
+          state.plants.forEach(plant => {
+            (plant.tasks || []).forEach(task => {
+              task.nextDue = calcNextDue(task);
+            });
+          });
+          saveState();
+          renderView();
+          showToast(`${parsed.plants.length} plant(s) imported ✓`);
+        }
+      );
+    } catch(err) {
+      showToast('Failed to read backup file');
+      console.error(err);
+    }
+    event.target.value = '';  // allow re-selecting same file
+  };
+  reader.readAsText(file);
+}
+
+/* ────────────────────────────────────────────
+   MODAL HELPERS
+──────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+/* ────────────────────────────────────────────
+   CONFIRM DIALOG
+──────────────────────────────────────────── */
+function showConfirm(title, text, callback) {
+  confirmCb = callback;
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmText').textContent  = text;
+  openModal('confirmModal');
+}
+
+/* ────────────────────────────────────────────
+   TOAST
+──────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+/* ────────────────────────────────────────────
+   EVENT WIRING (all in one place)
+──────────────────────────────────────────── */
+function wireEvents() {
+  // Nav tabs
+  document.getElementById('navToday').addEventListener('click', () => switchView('today'));
+  document.getElementById('navGarden').addEventListener('click', () => switchView('garden'));
+  document.getElementById('navSettings').addEventListener('click', () => switchView('settings'));
+
+  // Add plant
+  document.getElementById('addPlantBtn').addEventListener('click', openAddPlant);
+  document.getElementById('savePlantBtn').addEventListener('click', savePlant);
+  document.getElementById('cancelPlantBtn').addEventListener('click', () => closeModal('plantModal'));
+
+  // Close modals on overlay click
+  ['plantModal','taskModal','confirmModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) closeModal(id);
+    });
+  });
+
+  // Task type change → show/hide custom name field
+  document.getElementById('taskType').addEventListener('change', function() {
+    document.getElementById('customNameGroup').classList.toggle('hidden', this.value !== 'Custom');
+  });
+
+  // Frequency change → show/hide X-days input
+  document.getElementById('taskFreq').addEventListener('change', function() {
+    document.getElementById('taskFreqDays').classList.toggle('hidden', this.value !== 'every_x');
+  });
+
+  // Save / cancel task
+  document.getElementById('saveTaskBtn').addEventListener('click', saveTask);
+  document.getElementById('cancelTaskBtn').addEventListener('click', () => closeModal('taskModal'));
+
+  // Add task from detail view
+  document.getElementById('addTaskBtn').addEventListener('click', openAddTask);
+  document.getElementById('addTaskBtnAlt').addEventListener('click', openAddTask);
+
+  // Detail overlay actions
+  document.getElementById('backBtn').addEventListener('click', closeDetail);
+  document.getElementById('editPlantBtn').addEventListener('click', () => openEditPlant(currentPlantId));
+  document.getElementById('deletePlantBtn').addEventListener('click', confirmDeletePlant);
+
+  // Notes autosave
+  document.getElementById('detailNotes').addEventListener('input', () => {
+    clearTimeout(notesTimer);
+    notesTimer = setTimeout(saveNotes, 600);
+  });
+
+  // Import / Export
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', importData);
+
+  // Confirm dialog
+  document.getElementById('confirmOkBtn').addEventListener('click', () => {
+    closeModal('confirmModal');
+    if (confirmCb) { confirmCb(); confirmCb = null; }
+  });
+  document.getElementById('confirmCancelBtn').addEventListener('click', () => {
+    closeModal('confirmModal');
+    confirmCb = null;
+  });
+
+  // Keyboard: Escape closes modals
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    ['plantModal','taskModal','confirmModal'].forEach(id => closeModal(id));
+  });
+}
+
+/* ────────────────────────────────────────────
+   INIT
+──────────────────────────────────────────── */
+function init() {
+  // Header date
+  const now = new Date();
+  const dayName = now.toLocaleDateString('en-US', { weekday:'short' });
+  const dateStr = now.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  document.getElementById('headerDate').innerHTML = `${dayName}<br>${dateStr}`;
+
+  // Load data
+  loadState();
+
+  // Wire all events
+  wireEvents();
+
+  // Render default view
+  renderToday();
+}
+
+init();
 </script>
 </body>
 </html>
